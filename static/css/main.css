@@ -1,0 +1,415 @@
+body,
+h1,
+ul,
+li,
+a,
+select {
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    list-style: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header container */
+header {
+    background-color: white;
+    /* dark blue-grey tone */
+    padding: 15px 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Flexbox for navigation layout */
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    /* logo on left, nav links on right */
+    align-items: center;
+}
+
+/* Logo text */
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Navigation list */
+nav ul {
+    display: flex;
+    gap: 20px;
+    /* space between links */
+}
+
+nav a {
+    color: grey;
+    font-size: large;
+    font-weight: 460;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: transparent;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+nav a:hover {
+    background-color: rgb(223, 223, 223);
+    color: rgb(201, 0, 0);
+}
+
+.container {
+    max-width: 1000px;
+    /* limit content width */
+    margin: 40px auto;
+    /* center horizontally */
+    padding: 20px 30px;
+    /* inner spacing */
+    background-color: #f9fafb;
+    /* soft gray background */
+    border-radius: 12px;
+    /* rounded corners */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* subtle shadow */
+    color: #1e293b;
+    /* dark text for readability */
+}
+
+.title {
+    display: flex;
+    justify-content: space-between;
+    /* Space between title and controls */
+    align-items: center;
+    /* Vertically aligns items */
+    position: relative;
+    gap: 15px;
+}
+
+.title h1 {
+    flex: 1;
+    margin: 0;
+}
+
+.title > div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    position: static;
+    /* Changed from absolute */
+}
+
+.title select {
+    border-radius: 5px;
+    font-size: medium;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+}
+
+
+/* Optional: spacing for text and elements inside */
+.container h2,
+.container p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+/* Placement section container */
+.results,
+.no_records {
+    margin: 40px auto;
+    padding: 30px;
+    max-width: 1000px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Page title */
+.placement h2 {
+    color: #1e293b;
+    /* dark slate blue */
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+}
+
+/* Table structure */
+.placement table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Table header */
+.placement th {
+    background-color: #1e293b;
+    /* header background */
+    color: white;
+    text-align: center;
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+/* Table rows */
+.placement td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Alternate row colors */
+.placement tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+/* Edit Button */
+.edit-button {
+    background-color: #1e293b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+    background-color: #0f172a;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 5% auto;
+    padding: 30px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.modal-close:hover,
+.modal-close:focus {
+    color: #000;
+}
+
+.modal-content h2 {
+    color: #1e293b;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.modal-content h3 {
+    color: #1e293b;
+    margin: 20px 0 15px 0;
+    font-size: 1.3rem;
+}
+
+.modal-content h4 {
+    color: #1e293b;
+    margin: 20px 0 10px 0;
+    font-size: 1.1rem;
+}
+
+/* Login Form */
+.modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-content input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-content input:focus {
+    outline: none;
+    border-color: #1e293b;
+    box-shadow: 0 0 5px rgba(30, 41, 59, 0.2);
+}
+
+.modal-content button {
+    padding: 12px 15px;
+    background-color: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
+    background-color: #0f172a;
+}
+
+/* Edit Controls */
+.edit-controls {
+    margin: 20px 0;
+}
+
+.edit-controls button {
+    padding: 10px 15px;
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.edit-controls button:hover {
+    background-color: #15803d;
+}
+
+/* Edit Table */
+.edit-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.edit-table th {
+    background-color: #1e293b;
+    color: white;
+    text-align: center;
+    padding: 12px 15px;
+    font-weight: 600;
+}
+
+.edit-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.edit-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+/* Delete Button */
+.delete-btn {
+    padding: 8px 12px;
+    background-color: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #b91c1c;
+}
+
+/* Action Cell */
+.action-cell {
+    text-align: center;
+}
+
+/* Modal for larger content */
+@media (max-height: 800px) {
+    .modal-content {
+        margin: 10px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Hover effect */
+.placement tr:hover {
+    background-color: #e0f2fe;
+    /* light blue highlight */
+    transition: background-color 0.2s ease;
+}
+
+.no_records {
+    max-height: 400px;
+    /* adjust height limit */
+    overflow-y: auto;
+    /* enable vertical scroll */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.dropdown {
+    position: relative;
+    /* required for absolute positioning of submenu */
+}
+
+.dropdown-menu {
+    display: none;
+    /* hide by default */
+    position: absolute;
+    /* place relative to parent */
+    top: 130%;
+    /* right below parent */
+    left: 0;
+    background-color: white;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    border-radius: 6px;
+    min-width: 100px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Dropdown menu links */
+.dropdown-menu li a {
+    display: block;
+    padding: 10px 15px;
+    color: grey;
+    font-weight: 460;
+    font-size: large;
+    font-weight: 460;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-menu li a:hover {
+    background-color: rgb(223, 223, 223);
+    color: rgb(201, 0, 0);
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Optional arrow styling */
+.dropdown>a::after {
+    content: " ▼";
+    font-size: 0.7rem;
+}

@@ -1,0 +1,305 @@
+{%extends "layout.html"%}
+{%block content%}
+<div class="placement">
+    <div class="title">
+        <h1>Placement</h1>
+        <div>
+            <button id="editBtn" class="edit-button" onclick="openLoginModal()">Edit</button>
+            <form method="POST" action="{{url_for('placement', category=category)}}" style="margin: 0;">
+                <select name="range" onchange="this.form.submit()">
+                    <option {% if selected=='This Week' %}selected{% endif %}>This Week</option>
+                    <option {% if selected=='Last Week' %}selected{% endif %}>Last Week</option>
+                    <option {% if selected=='This Month' %}selected{% endif %}>This Month</option>
+                </select>
+            </form>
+        </div>
+    </div>
+    
+    <div class="results">
+        <h2>Results</h2>
+        <table id="resultsTable">
+            <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+                <th id="actionHeader" style="display: none;">Action</th>
+            </tr>
+            {% for item in data %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.status }}</td>
+                <td>{{ item.timestamp }}</td>
+                <td class="action-cell" style="display: none;">
+                    <button class="delete-btn" onclick="deleteUser('{{ item.name }}')">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="no_records">
+        <h2>No Records</h2>
+        <table id="noRecordsTable">
+            <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th id="actionHeader2" style="display: none;">Action</th>
+            </tr>
+            {% for item in no_records %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.name }}</td>
+                <td class="action-cell" style="display: none;">
+                    <button class="delete-btn" onclick="deleteUser('{{ item.name }}')">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeLoginModal()">&times;</span>
+        <h2>Admin Login</h2>
+        <div id="loginForm" style="display: block;">
+            <form>
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="button" onclick="submitLogin()">Login</button>
+            </form>
+            <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
+        </div>
+
+        <!-- Edit Mode (shown after login) -->
+        <div id="editMode" style="display: none;">
+            <h3>Edit Data</h3>
+            <div class="edit-controls">
+                <button type="button" onclick="toggleAddForm()">Add New User</button>
+            </div>
+
+            <!-- Add User Form -->
+            <div id="addUserForm" style="display: none; margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
+                <h4>Add New User</h4>
+                <form>
+                    <input type="text" id="newName" placeholder="Name" required>
+                    <input type="text" id="newBadgeNo" placeholder="Badge No" required>
+                    <input type="text" id="newCardNo" placeholder="Card No" required>
+                    <input type="text" id="newDepartment" placeholder="Department" required>
+                    <button type="button" onclick="submitAddUser()">Add User</button>
+                    <button type="button" onclick="toggleAddForm()">Cancel</button>
+                </form>
+                <div id="addUserError" style="color: red; margin-top: 10px; display: none;"></div>
+                <div id="addUserSuccess" style="color: green; margin-top: 10px; display: none;"></div>
+            </div>
+
+            <h4>Delete User</h4>
+            <table class="edit-table">
+                <tr>
+                    <th>No</th>
+                    <th>Name (Results)</th>
+                    <th>Action</th>
+                </tr>
+                {% for item in data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        <button type="button" class="delete-btn" onclick="confirmDeleteUser('{{ item.name }}')">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <h4>Delete from No Records</h4>
+            <table class="edit-table">
+                <tr>
+                    <th>No</th>
+                    <th>Name (No Records)</th>
+                    <th>Action</th>
+                </tr>
+                {% for item in no_records %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>
+                        <button type="button" class="delete-btn" onclick="confirmDeleteUser('{{ item.name }}')">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+
+            <div id="deleteError" style="color: red; margin-top: 10px; display: none;"></div>
+            <div id="deleteSuccess" style="color: green; margin-top: 10px; display: none;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isLoggedIn = false;
+
+    function openLoginModal() {
+        document.getElementById('loginModal').style.display = 'block';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('editMode').style.display = 'none';
+        isLoggedIn = false;
+    }
+
+    function closeLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.getElementById('editMode').style.display = 'none';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('addUserForm').style.display = 'none';
+        
+        // Refresh page if changes were made
+        if (isLoggedIn) {
+            location.reload();
+        }
+        isLoggedIn = false;
+    }
+
+    function submitLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('editMode').style.display = 'block';
+                document.getElementById('loginError').style.display = 'none';
+            } else {
+                document.getElementById('loginError').innerText = data.message;
+                document.getElementById('loginError').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            document.getElementById('loginError').innerText = 'Error: ' + error;
+            document.getElementById('loginError').style.display = 'block';
+        });
+    }
+
+    function toggleAddForm() {
+        const form = document.getElementById('addUserForm');
+        if (form.style.display === 'none') {
+            form.style.display = 'block';
+        } else {
+            form.style.display = 'none';
+            // Clear the form
+            document.getElementById('newName').value = '';
+            document.getElementById('newBadgeNo').value = '';
+            document.getElementById('newCardNo').value = '';
+            document.getElementById('newDepartment').value = '';
+            document.getElementById('addUserError').style.display = 'none';
+            document.getElementById('addUserSuccess').style.display = 'none';
+        }
+    }
+
+    function submitAddUser() {
+        const name = document.getElementById('newName').value.trim();
+        const badge_no = document.getElementById('newBadgeNo').value.trim();
+        const card_no = document.getElementById('newCardNo').value.trim();
+        const department = document.getElementById('newDepartment').value.trim();
+
+        if (!name || !badge_no || !card_no || !department) {
+            document.getElementById('addUserError').innerText = 'All fields are required';
+            document.getElementById('addUserError').style.display = 'block';
+            return;
+        }
+
+        fetch('/api/add-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, badge_no, card_no, department })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('addUserSuccess').innerText = data.message;
+                document.getElementById('addUserSuccess').style.display = 'block';
+                document.getElementById('addUserError').style.display = 'none';
+                // Clear the form
+                document.getElementById('newName').value = '';
+                document.getElementById('newBadgeNo').value = '';
+                document.getElementById('newCardNo').value = '';
+                document.getElementById('newDepartment').value = '';
+                isLoggedIn = true;
+                // Don't close the modal, only show success message
+            } else {
+                document.getElementById('addUserError').innerText = data.message;
+                document.getElementById('addUserError').style.display = 'block';
+                document.getElementById('addUserSuccess').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            document.getElementById('addUserError').innerText = 'Error: ' + error;
+            document.getElementById('addUserError').style.display = 'block';
+            document.getElementById('addUserSuccess').style.display = 'none';
+        });
+    }
+
+    function confirmDeleteUser(name) {
+        if (confirm(`Are you sure you want to delete ${name}?`)) {
+            deleteUserConfirmed(name);
+        }
+    }
+
+    function deleteUserConfirmed(name) {
+        fetch('/api/delete-user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('deleteSuccess').innerText = data.message;
+                document.getElementById('deleteSuccess').style.display = 'block';
+                document.getElementById('deleteError').style.display = 'none';
+                isLoggedIn = true;
+                // Don't close the modal, only show success message
+            } else {
+                document.getElementById('deleteError').innerText = data.message;
+                document.getElementById('deleteError').style.display = 'block';
+                document.getElementById('deleteSuccess').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            document.getElementById('deleteError').innerText = 'Error: ' + error;
+            document.getElementById('deleteError').style.display = 'block';
+            document.getElementById('deleteSuccess').style.display = 'none';
+        });
+    }
+
+    function deleteUser(name) {
+        // This function is for the delete buttons in normal view (not in edit mode)
+        // Currently hidden, can be enabled if needed
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('loginModal');
+        if (event.target == modal) {
+            closeLoginModal();
+        }
+    }
+</script>
+
+{%endblock%}
