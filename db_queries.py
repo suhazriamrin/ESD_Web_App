@@ -98,7 +98,7 @@ def fetch_latest_results(start_date, end_date, dept):
                 WHERE n.active = 1 AND
                 g.is_tested = 1
                 -- AND
-                -- g.test_time BETWEEN "" AND ""
+                -- g.test_time BETWEEN %s AND %s
             )
             SELECT name, status, station, timestamp, remarks
             FROM Ranked
@@ -122,8 +122,7 @@ def fetch_latest_results(start_date, end_date, dept):
                     ON g.card_number = n.card_number
                 WHERE n.active = 1 AND
                 g.is_tested = 1
-                AND
-                g.test_time BETWEEN %s AND %s
+                AND g.test_time BETWEEN %s AND %s
             )
             SELECT name, status, station, timestamp, remarks
             FROM Ranked
