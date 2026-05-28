@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from functools import wraps
 from data_filter import fetch_date_range, fetch_department
-from db_queries import fetch_latest_results, fetch_no_records, delete_user, add_user, get_admin_credentials, validate_api_key, fetch_all_namelist, ensure_api_key_column, generate_api_key_for_user, fetch_esd_namelist_this_week
+from db_queries import fetch_latest_results, fetch_no_records, delete_user, get_admin_credentials, validate_api_key, fetch_all_namelist, ensure_api_key_column, generate_api_key_for_user, fetch_esd_namelist_this_week, get_connection
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
@@ -124,25 +124,28 @@ def delete_user_route():
         print("ERROR:", e)
         return jsonify({'success': False, 'message': str(e)}), 500
 
-@app.route('/api/add-user', methods=['POST'])
-def add_user_route():
-    """Add a new user to the database."""
+@app.route('/api/update-remarks', methods=['POST'])
+def update_remarks():
+    """Update remarks for a user."""
     try:
         data = request.get_json()
-        name = data.get('name', '').strip()
-        badge_no = data.get('badge_no', '').strip()
-        card_no = data.get('card_no', '').strip()
-        department = data.get('department', '').strip()
+        name = data.get('name', '')
+        remarks = data.get('remarks', '')
         
-        # Validate input
-        if not all([name, badge_no, card_no, department]):
-            return jsonify({'success': False, 'message': 'All fields are required'}), 400
+        if not name:
+            return jsonify({'success': False, 'message': 'User name is required'}), 400
         
-        result = add_user(name, badge_no, card_no, department)
-        if result:
-            return jsonify({'success': True, 'message': f'User {name} added successfully'})
+        conn = get_connection()
+        if conn:
+            cursor = conn.cursor()
+            query = "UPDATE zhaji.cards SET remarks = %s WHERE name = %s"
+            cursor.execute(query, (remarks, name))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({'success': True, 'message': f'Remarks updated for {name}'})
         else:
-            return jsonify({'success': False, 'message': 'Error adding user'}), 500
+            return jsonify({'success': False, 'message': 'Database connection error'}), 500
     except Exception as e:
         print("ERROR:", e)
         return jsonify({'success': False, 'message': str(e)}), 500

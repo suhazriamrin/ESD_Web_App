@@ -14,7 +14,7 @@
             </form>
         </div>
     </div>
-    
+
     <div class="results">
         <h2>Results</h2>
         <table id="resultsTable">
@@ -23,20 +23,32 @@
                 <th>Name</th>
                 <th>Status</th>
                 <th>Timestamp</th>
+                <th>Station</th>
+                <th>Remarks</th>
                 <th id="actionHeader" style="display: none;">Action</th>
             </tr>
             {% for item in data %}
-            <tr>
+            <tr data-row-id="result_{{ loop.index0 }}" data-name="{{ item.name }}">
                 <td>{{ loop.index }}</td>
                 <td>{{ item.name }}</td>
                 <td>{{ item.status }}</td>
                 <td>{{ item.timestamp }}</td>
+                <td>{{ item.station or '' }}</td>
+                <td class="remarks-cell" data-name="{{ item.name }}">
+                    <span class="remarks-view">{{ item.remarks or '' }}</span>
+                    <input type="text" class="remarks-edit" style="display: none;" value="{{ item.remarks or '' }}">
+                </td>
                 <td class="action-cell" style="display: none;">
-                    <button class="delete-btn" onclick="deleteUser('{{ item.name }}')">Delete</button>
+                    <button class="delete-btn"
+                        onclick="markForDelete('result_{{ loop.index0 }}', '{{ item.name }}')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
         </table>
+        <div id="tableControls" style="display: none; margin-top: 15px; text-align: right; gap: 10px;">
+            <button id="saveBtn" class="save-btn" onclick="saveChanges()">Save</button>
+            <button id="cancelBtn" class="cancel-btn" onclick="cancelChanges()">Cancel</button>
+        </div>
     </div>
 
     <div class="no_records">
@@ -45,25 +57,36 @@
             <tr>
                 <th>No</th>
                 <th>Name</th>
+                <th>Station</th>
+                <th>Remarks</th>
                 <th id="actionHeader2" style="display: none;">Action</th>
             </tr>
             {% for item in no_records %}
-            <tr>
+            <tr data-row-id="norecord_{{ loop.index0 }}" data-name="{{ item.name }}">
                 <td>{{ loop.index }}</td>
                 <td>{{ item.name }}</td>
+                <td>{{ item.station or '' }}</td>
+                <td class="remarks-cell" data-name="{{ item.name }}">
+                    <span class="remarks-view">{{ item.remarks or '' }}</span>
+                    <input type="text" class="remarks-edit" style="display: none;" value="{{ item.remarks or '' }}">
+                </td>
                 <td class="action-cell" style="display: none;">
-                    <button class="delete-btn" onclick="deleteUser('{{ item.name }}')">Delete</button>
+                    <button class="delete-btn"
+                        onclick="markForDelete('norecord_{{ loop.index0 }}', '{{ item.name }}')">Delete</button>
                 </td>
             </tr>
             {% endfor %}
         </table>
+        <div id="tableControlsNoRecords" style="display: none; margin-top: 15px; text-align: right; gap: 10px;">
+            <button id="saveBtn2" class="save-btn" onclick="saveChanges()">Save</button>
+            <button id="cancelBtn2" class="cancel-btn" onclick="cancelChanges()">Cancel</button>
+        </div>
     </div>
 </div>
 
 <!-- Login Modal -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
-        <span class="modal-close" onclick="closeLoginModal()">&times;</span>
         <h2>Admin Login</h2>
         <div id="loginForm" style="display: block;">
             <form>
@@ -73,95 +96,30 @@
             </form>
             <div id="loginError" style="color: red; margin-top: 10px; display: none;"></div>
         </div>
-
-        <!-- Edit Mode (shown after login) -->
-        <div id="editMode" style="display: none;">
-            <h3>Edit Data</h3>
-            <div class="edit-controls">
-                <button type="button" onclick="toggleAddForm()">Add New User</button>
-            </div>
-
-            <!-- Add User Form -->
-            <div id="addUserForm" style="display: none; margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 5px; background-color: #f9f9f9;">
-                <h4>Add New User</h4>
-                <form>
-                    <input type="text" id="newName" placeholder="Name" required>
-                    <input type="text" id="newBadgeNo" placeholder="Badge No" required>
-                    <input type="text" id="newCardNo" placeholder="Card No" required>
-                    <input type="text" id="newDepartment" placeholder="Department" required>
-                    <button type="button" onclick="submitAddUser()">Add User</button>
-                    <button type="button" onclick="toggleAddForm()">Cancel</button>
-                </form>
-                <div id="addUserError" style="color: red; margin-top: 10px; display: none;"></div>
-                <div id="addUserSuccess" style="color: green; margin-top: 10px; display: none;"></div>
-            </div>
-
-            <h4>Delete User</h4>
-            <table class="edit-table">
-                <tr>
-                    <th>No</th>
-                    <th>Name (Results)</th>
-                    <th>Action</th>
-                </tr>
-                {% for item in data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>
-                        <button type="button" class="delete-btn" onclick="confirmDeleteUser('{{ item.name }}')">Delete</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-
-            <h4>Delete from No Records</h4>
-            <table class="edit-table">
-                <tr>
-                    <th>No</th>
-                    <th>Name (No Records)</th>
-                    <th>Action</th>
-                </tr>
-                {% for item in no_records %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>
-                        <button type="button" class="delete-btn" onclick="confirmDeleteUser('{{ item.name }}')">Delete</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-
-            <div id="deleteError" style="color: red; margin-top: 10px; display: none;"></div>
-            <div id="deleteSuccess" style="color: green; margin-top: 10px; display: none;"></div>
-        </div>
     </div>
 </div>
 
 <script>
     let isLoggedIn = false;
+    const originalRemarks = {};
+    const deletedRows = new Set();
+    const editedRemarks = {};
+    let originalTableState = {
+        results: '',
+        noRecords: ''
+    };
 
     function openLoginModal() {
         document.getElementById('loginModal').style.display = 'block';
         document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('editMode').style.display = 'none';
-        isLoggedIn = false;
     }
 
     function closeLoginModal() {
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('editMode').style.display = 'none';
         document.getElementById('username').value = '';
         document.getElementById('password').value = '';
         document.getElementById('loginError').style.display = 'none';
-        document.getElementById('addUserForm').style.display = 'none';
-        
-        // Refresh page if changes were made
-        if (isLoggedIn) {
-            location.reload();
-        }
-        isLoggedIn = false;
     }
 
     function submitLogin() {
@@ -175,130 +133,198 @@
             },
             body: JSON.stringify({ username, password })
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('editMode').style.display = 'block';
-                document.getElementById('loginError').style.display = 'none';
-            } else {
-                document.getElementById('loginError').innerText = data.message;
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    isLoggedIn = true;
+                    closeLoginModal();
+                    enableEditMode();
+                } else {
+                    document.getElementById('loginError').innerText = data.message;
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loginError').innerText = 'Error: ' + error;
                 document.getElementById('loginError').style.display = 'block';
+            });
+    }
+
+    function enableEditMode() {
+        // Store original state
+        const resultsTable = document.getElementById('resultsTable');
+        const noRecordsTable = document.getElementById('noRecordsTable');
+        originalTableState.results = resultsTable.innerHTML;
+        originalTableState.noRecords = noRecordsTable.innerHTML;
+
+        // Show delete buttons and remarks editing
+        const actionHeaders = document.querySelectorAll('#actionHeader, #actionHeader2');
+        const actionCells = document.querySelectorAll('.action-cell');
+
+        actionHeaders.forEach(header => header.style.display = '');
+        actionCells.forEach(cell => cell.style.display = '');
+
+        // Show save/cancel buttons
+        const tableControls = document.getElementById('tableControls');
+        const tableControlsNoRecords = document.getElementById('tableControlsNoRecords');
+        tableControls.style.display = 'flex';
+        tableControlsNoRecords.style.display = 'flex';
+
+        // Make remarks cells clickable and store originals
+        const remarksCells = document.querySelectorAll('.remarks-cell');
+        remarksCells.forEach(cell => {
+            const name = cell.dataset.name;
+            const row = cell.closest('tr');
+            const rowId = row.dataset['rowId'];
+
+            if (!originalRemarks[rowId]) {
+                originalRemarks[rowId] = {
+                    name: name,
+                    remarks: cell.querySelector('.remarks-view').textContent
+                };
+                editedRemarks[rowId] = cell.querySelector('.remarks-view').textContent;
             }
-        })
-        .catch(error => {
-            document.getElementById('loginError').innerText = 'Error: ' + error;
-            document.getElementById('loginError').style.display = 'block';
+
+            cell.addEventListener('click', function () {
+                toggleRemarkEdit(this);
+            });
         });
     }
 
-    function toggleAddForm() {
-        const form = document.getElementById('addUserForm');
-        if (form.style.display === 'none') {
-            form.style.display = 'block';
+    function toggleRemarkEdit(cell) {
+        const view = cell.querySelector('.remarks-view');
+        const edit = cell.querySelector('.remarks-edit');
+
+        if (edit.style.display === 'none') {
+            view.style.display = 'none';
+            edit.style.display = '';
+            edit.focus();
         } else {
-            form.style.display = 'none';
-            // Clear the form
-            document.getElementById('newName').value = '';
-            document.getElementById('newBadgeNo').value = '';
-            document.getElementById('newCardNo').value = '';
-            document.getElementById('newDepartment').value = '';
-            document.getElementById('addUserError').style.display = 'none';
-            document.getElementById('addUserSuccess').style.display = 'none';
+            view.style.display = '';
+            edit.style.display = 'none';
+
+            // Update editedRemarks
+            const row = cell.closest('tr');
+            const rowId = row.dataset['rowId'];
+            editedRemarks[rowId] = edit.value;
         }
     }
 
-    function submitAddUser() {
-        const name = document.getElementById('newName').value.trim();
-        const badge_no = document.getElementById('newBadgeNo').value.trim();
-        const card_no = document.getElementById('newCardNo').value.trim();
-        const department = document.getElementById('newDepartment').value.trim();
-
-        if (!name || !badge_no || !card_no || !department) {
-            document.getElementById('addUserError').innerText = 'All fields are required';
-            document.getElementById('addUserError').style.display = 'block';
-            return;
-        }
-
-        fetch('/api/add-user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name, badge_no, card_no, department })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('addUserSuccess').innerText = data.message;
-                document.getElementById('addUserSuccess').style.display = 'block';
-                document.getElementById('addUserError').style.display = 'none';
-                // Clear the form
-                document.getElementById('newName').value = '';
-                document.getElementById('newBadgeNo').value = '';
-                document.getElementById('newCardNo').value = '';
-                document.getElementById('newDepartment').value = '';
-                isLoggedIn = true;
-                // Don't close the modal, only show success message
+    function markForDelete(rowId, name) {
+        const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+        if (row) {
+            if (deletedRows.has(rowId)) {
+                deletedRows.delete(rowId);
+                row.style.opacity = '1';
+                row.style.textDecoration = 'none';
             } else {
-                document.getElementById('addUserError').innerText = data.message;
-                document.getElementById('addUserError').style.display = 'block';
-                document.getElementById('addUserSuccess').style.display = 'none';
+                deletedRows.add(rowId);
+                row.style.opacity = '0.5';
+                row.style.textDecoration = 'line-through';
             }
-        })
-        .catch(error => {
-            document.getElementById('addUserError').innerText = 'Error: ' + error;
-            document.getElementById('addUserError').style.display = 'block';
-            document.getElementById('addUserSuccess').style.display = 'none';
-        });
-    }
-
-    function confirmDeleteUser(name) {
-        if (confirm(`Are you sure you want to delete ${name}?`)) {
-            deleteUserConfirmed(name);
         }
     }
 
-    function deleteUserConfirmed(name) {
-        fetch('/api/delete-user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ name })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('deleteSuccess').innerText = data.message;
-                document.getElementById('deleteSuccess').style.display = 'block';
-                document.getElementById('deleteError').style.display = 'none';
-                isLoggedIn = true;
-                // Don't close the modal, only show success message
-            } else {
-                document.getElementById('deleteError').innerText = data.message;
-                document.getElementById('deleteError').style.display = 'block';
-                document.getElementById('deleteSuccess').style.display = 'none';
+    function saveChanges() {
+        let savePromises = [];
+
+        // Handle deleted rows
+        deletedRows.forEach(rowId => {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            if (row) {
+                const name = row.dataset.name;
+                savePromises.push(
+                    fetch('/api/delete-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                row.remove();
+                            } else {
+                                alert('Error deleting ' + name + ': ' + data.message);
+                            }
+                        })
+                );
             }
-        })
-        .catch(error => {
-            document.getElementById('deleteError').innerText = 'Error: ' + error;
-            document.getElementById('deleteError').style.display = 'block';
-            document.getElementById('deleteSuccess').style.display = 'none';
         });
-    }
 
-    function deleteUser(name) {
-        // This function is for the delete buttons in normal view (not in edit mode)
-        // Currently hidden, can be enabled if needed
-    }
+        // Handle edited remarks
+        Object.keys(editedRemarks).forEach(rowId => {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            if (row && originalRemarks[rowId]) {
+                const name = originalRemarks[rowId].name;
+                const current = editedRemarks[rowId];
+                const original = originalRemarks[rowId].remarks;
 
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        const modal = document.getElementById('loginModal');
-        if (event.target == modal) {
-            closeLoginModal();
+                if (current !== original) {
+                    const cell = row.querySelector('.remarks-cell');
+                    savePromises.push(
+                        fetch('/api/update-remarks', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name, remarks: current })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    originalRemarks[rowId].remarks = current;
+                                    cell.querySelector('.remarks-view').textContent = current;
+                                    cell.querySelector('.remarks-edit').value = current;
+                                } else {
+                                    alert('Error updating remarks for ' + name + ': ' + data.message);
+                                }
+                            })
+                    );
+                }
+            }
+        });
+
+        if (savePromises.length === 0) {
+            alert('No changes made.');
+        } else {
+            Promise.all(savePromises).then(() => {
+                deletedRows.clear();
+                // Hide save/cancel buttons before reload
+                const tableControls = document.getElementById('tableControls');
+                const tableControlsNoRecords = document.getElementById('tableControlsNoRecords');
+                tableControls.style.display = 'none';
+                tableControlsNoRecords.style.display = 'none';
+                alert('All changes saved successfully!');
+                location.reload();
+            });
         }
+    }
+
+    function cancelChanges() {
+        const resultsTable = document.getElementById('resultsTable');
+        const noRecordsTable = document.getElementById('noRecordsTable');
+
+        // Restore original HTML
+        resultsTable.innerHTML = originalTableState.results;
+        noRecordsTable.innerHTML = originalTableState.noRecords;
+
+        // Clear tracking variables
+        deletedRows.clear();
+        editedRemarks = {};
+
+        // Hide save/cancel buttons
+        const tableControls = document.getElementById('tableControls');
+        const tableControlsNoRecords = document.getElementById('tableControlsNoRecords');
+        tableControls.style.display = 'none';
+        tableControlsNoRecords.style.display = 'none';
+
+        // Hide delete buttons and action headers
+        const actionHeaders = document.querySelectorAll('#actionHeader, #actionHeader2');
+        const actionCells = document.querySelectorAll('.action-cell');
+        actionHeaders.forEach(header => header.style.display = 'none');
+        actionCells.forEach(cell => cell.style.display = 'none');
     }
 </script>
 

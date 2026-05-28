@@ -88,7 +88,7 @@ nav a:hover {
     margin: 0;
 }
 
-.title > div {
+.title>div {
     display: flex;
     gap: 10px;
     align-items: center;
@@ -412,4 +412,83 @@ nav a:hover {
 .dropdown>a::after {
     content: " ▼";
     font-size: 0.7rem;
+}
+
+/* Editable Remarks Cell */
+.remarks-cell {
+    cursor: pointer;
+    position: relative;
+}
+
+.remarks-cell:hover .remarks-view {
+    background-color: #fff3cd;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.remarks-edit {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #1e293b;
+    border-radius: 4px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.remarks-edit:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(30, 41, 59, 0.3);
+}
+
+/* Save Button */
+.save-btn {
+    padding: 10px 20px;
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.save-btn:hover {
+    background-color: #15803d;
+}
+
+/* Cancel Button */
+.cancel-btn {
+    padding: 10px 20px;
+    background-color: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background-color: #4b5563;
+}
+
+/* Table Controls */
+#tableControls {
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+#tableControlsNoRecords {
+    display: flex !important;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Deleted Row Style */
+tr[style*="text-decoration: line-through"] {
+    background-color: #fee !important;
 }

@@ -89,16 +89,18 @@ def fetch_latest_results(start_date, end_date, dept):
                             WHEN g.test_result = 1 THEN 'PASS' END AS Status,
                     g.test_time AS Timestamp,
                     n.department,
-                    ROW_NUMBER() OVER (PARTITION BY n.name ORDER BY g.test_time DESC) AS rn
+                    ROW_NUMBER() OVER (PARTITION BY n.name ORDER BY g.test_time DESC) AS rn,
+                    n.note "station",
+                    n.remarks
                 FROM zhaji.cards AS n
                 JOIN zhaji.gate_log AS g
                     ON g.card_number = n.card_number
                 WHERE n.active = 1 AND
                 g.is_tested = 1
-                AND
-                g.test_time BETWEEN %s AND %s
+                -- AND
+                -- g.test_time BETWEEN "" AND ""
             )
-            SELECT name, status, timestamp
+            SELECT name, status, station, timestamp, remarks
             FROM Ranked
             WHERE rn = 1;
             """
@@ -111,7 +113,10 @@ def fetch_latest_results(start_date, end_date, dept):
                             WHEN g.test_result = 1 THEN 'PASS' END AS Status,
                     g.test_time AS Timestamp,
                     n.department,
-                    ROW_NUMBER() OVER (PARTITION BY n.name ORDER BY g.test_time DESC) AS rn
+                    ROW_NUMBER() OVER (PARTITION BY n.name ORDER BY g.test_time DESC) AS rn,
+                    n.note AS station,
+                    n.remarks
+
                 FROM zhaji.cards AS n
                 JOIN zhaji.gate_log AS g
                     ON g.card_number = n.card_number
@@ -120,7 +125,7 @@ def fetch_latest_results(start_date, end_date, dept):
                 AND
                 g.test_time BETWEEN %s AND %s
             )
-            SELECT name, status, timestamp
+            SELECT name, status, station, timestamp, remarks
             FROM Ranked
             WHERE rn = 1 AND department = %s;
             """
@@ -134,14 +139,16 @@ def fetch_latest_results(start_date, end_date, dept):
 def fetch_no_records(start_date, end_date, dept):
     print(start_date)
     print(end_date)
-    """Fetch latest PASS/FAIL status within the given date range."""
+    """Fetch records with no test results within the given date range."""
     conn = get_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
         if dept == 'all':
             query = """
                 SELECT 
-                    name
+                    name,
+                    note AS station,
+                    remarks
                 FROM
                     zhaji.cards
                 WHERE
@@ -161,7 +168,9 @@ def fetch_no_records(start_date, end_date, dept):
         else:
             query = """
                 SELECT 
-                    name
+                    name,
+                    note AS station,
+                    remarks
                 FROM
                     zhaji.cards
                 WHERE
@@ -276,7 +285,8 @@ def add_user(name, badge_no, card_no, department):
                 name,                 # name (for update)
                 badge_no,             # job_number (for update)
                 department,           # department (for update)
-                next_counter          # card_counter (for update if 0)
+                next_counter,         # card_counter (for update if 0)
+                ''                    # remarks
             ))
             conn.commit()
             cursor.close()
